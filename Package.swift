@@ -13,7 +13,8 @@ let releaseLinkerSettings: [LinkerSetting] = [
 let package = Package(
     name: "NotDiscordBut",
     platforms: [
-        .macOS(.v14)
+        .macOS(.v14),
+        .iOS(.v17)
     ],
     products: [
         .library(name: "DiscordPrimitives", targets: ["DiscordPrimitives"]),
@@ -24,7 +25,8 @@ let package = Package(
         .library(name: "DiscordState", targets: ["DiscordState"]),
         .library(name: "DiscordFeatures", targets: ["DiscordFeatures"]),
         .library(name: "DiscordKit", targets: ["DiscordKit"]),
-        .executable(name: "NotDiscordButMac", targets: ["NotDiscordButMac"])
+        .executable(name: "NotDiscordButMac", targets: ["NotDiscordButMac"]),
+        .executable(name: "NotDiscordButiOS", targets: ["NotDiscordButiOS"])
     ],
     targets: [
         .target(
@@ -98,6 +100,13 @@ let package = Package(
             name: "NotDiscordButMac",
             dependencies: ["DiscordKit"],
             path: "Apps/NotDiscordButMac/Sources/NotDiscordButMac",
+            swiftSettings: releaseSwiftSettings,
+            linkerSettings: releaseLinkerSettings
+        ),
+        .executableTarget(
+            name: "NotDiscordButiOS",
+            dependencies: ["DiscordKit"],
+            path: "Apps/NotDiscordButiOS/Sources/NotDiscordButiOS",
             swiftSettings: releaseSwiftSettings,
             linkerSettings: releaseLinkerSettings
         ),
