@@ -1,0 +1,78 @@
+import DiscordAuth
+import DiscordFeatures
+import DiscordGateway
+import DiscordHTTP
+import DiscordPrimitives
+import DiscordState
+
+public typealias ChannelID = DiscordPrimitives.ChannelID
+public typealias GuildID = DiscordPrimitives.GuildID
+public typealias MessageID = DiscordPrimitives.MessageID
+public typealias RoleID = DiscordPrimitives.RoleID
+public typealias UserID = DiscordPrimitives.UserID
+public typealias MessageNonce = DiscordPrimitives.MessageNonce
+public typealias Fingerprint = DiscordPrimitives.Fingerprint
+public typealias SessionTicket = DiscordPrimitives.SessionTicket
+public typealias DiscordUser = DiscordPrimitives.DiscordUser
+public typealias DiscordGuild = DiscordPrimitives.DiscordGuild
+public typealias DiscordGuildRole = DiscordPrimitives.DiscordGuildRole
+public typealias DiscordGuildMemberProfile = DiscordPrimitives.DiscordGuildMemberProfile
+public typealias DiscordChannel = DiscordPrimitives.DiscordChannel
+public typealias DiscordChannelKind = DiscordPrimitives.DiscordChannelKind
+public typealias DiscordMessage = DiscordPrimitives.DiscordMessage
+public typealias DiscordMessageAttachment = DiscordPrimitives.DiscordMessageAttachment
+public typealias DiscordMessageEmbed = DiscordPrimitives.DiscordMessageEmbed
+public typealias DiscordMessageReference = DiscordPrimitives.DiscordMessageReference
+public typealias DiscordReferencedMessage = DiscordPrimitives.DiscordReferencedMessage
+public typealias DiscordGuildEmoji = DiscordPrimitives.DiscordGuildEmoji
+public typealias DiscordReactionEmoji = DiscordPrimitives.DiscordReactionEmoji
+public typealias DiscordMessageReaction = DiscordPrimitives.DiscordMessageReaction
+public typealias DiscordRelationship = DiscordPrimitives.DiscordRelationship
+public typealias RelationshipKind = DiscordPrimitives.RelationshipKind
+public typealias DiscordUserProfile = DiscordPrimitives.DiscordUserProfile
+public typealias DiscordMutualGuild = DiscordPrimitives.DiscordMutualGuild
+public typealias DiscordSession = DiscordPrimitives.DiscordSession
+public typealias SessionAuthenticationKind = DiscordPrimitives.SessionAuthenticationKind
+public typealias DiscordUserSettings = DiscordPrimitives.DiscordUserSettings
+public typealias LoginCredentials = DiscordAuth.LoginCredentials
+public typealias LoginResult = DiscordAuth.LoginResult
+public typealias LoginSuccess = DiscordAuth.LoginSuccess
+public typealias LoginChallenge = DiscordAuth.LoginChallenge
+public typealias MFALoginChallenge = DiscordAuth.MFALoginChallenge
+public typealias MFAAuthenticatorType = DiscordAuth.MFAAuthenticatorType
+public typealias MFASMSResponse = DiscordAuth.MFASMSResponse
+public typealias RemoteAuthBootstrap = DiscordAuth.RemoteAuthBootstrap
+public typealias CaptchaChallenge = DiscordHTTP.CaptchaChallenge
+public typealias CaptchaAnswer = DiscordHTTP.CaptchaAnswer
+public typealias DiscordTransport = DiscordHTTP.DiscordTransport
+public typealias DiscordHTTPError = DiscordHTTP.DiscordHTTPError
+public typealias GatewayEvent = DiscordGateway.GatewayEvent
+public typealias GatewayReactionUpdate = DiscordGateway.GatewayReactionUpdate
+public typealias SidebarProjection = DiscordState.SidebarProjection
+public typealias SidebarFriendProjection = DiscordState.SidebarFriendProjection
+public typealias ChannelListProjection = DiscordState.ChannelListProjection
+public typealias GuildEmojiInventoryProjection = DiscordState.GuildEmojiInventoryProjection
+public typealias TimelineProjection = DiscordState.TimelineProjection
+public typealias TimelineEntryProjection = DiscordState.TimelineEntryProjection
+public typealias RichTimelineProjection = DiscordState.RichTimelineProjection
+public typealias ClusteredTimelineProjection = DiscordState.ClusteredTimelineProjection
+public typealias MessageClusterProjection = DiscordState.MessageClusterProjection
+public typealias ClusteredMessageProjection = DiscordState.ClusteredMessageProjection
+public typealias MessageTextBlock = DiscordState.MessageTextBlock
+public typealias MessageTextFragment = DiscordState.MessageTextFragment
+public typealias MessageCustomEmojiFragment = DiscordState.MessageCustomEmojiFragment
+public typealias MessageInlineFragment = DiscordState.MessageInlineFragment
+public typealias MessageParagraphStyle = DiscordState.MessageParagraphStyle
+public typealias LinkPreviewBlock = DiscordState.LinkPreviewBlock
+public typealias MessageRenderBlock = DiscordState.MessageRenderBlock
+public typealias MessageRenderBlockKind = DiscordState.MessageRenderBlockKind
+public typealias UserInspectorProjection = DiscordState.UserInspectorProjection
+public typealias NormalizedState = DiscordState.NormalizedState
+public typealias MessageSendInput = DiscordFeatures.MessageSendInput
+public typealias MessageReferenceSendInput = DiscordFeatures.MessageReferenceSendInput
+public typealias ReactionInput = DiscordFeatures.ReactionInput
+public typealias DiscordMessageSearchResults = DiscordPrimitives.DiscordMessageSearchResults
+public typealias NotificationBadgeSnapshot = DiscordFeatures.NotificationBadgeSnapshot
+public typealias CapabilityMask = DiscordPrimitives.CapabilityMask
+public typealias IntentMask = DiscordPrimitives.IntentMask
+public typealias SessionVault = DiscordPrimitives.SessionVault
