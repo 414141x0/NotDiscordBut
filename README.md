@@ -20,3 +20,7 @@ MacOS app supports messages, reacts, and most of the required functionalities.
 # Notice
 
 This project is not created by, endorsed by, or affiliated with Discord Inc.
+
+## License
+
+MIT
