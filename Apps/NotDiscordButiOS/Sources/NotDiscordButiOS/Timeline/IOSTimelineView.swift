@@ -13,7 +13,7 @@ struct IOSTimelineView: View {
         .navigationTitle(model.timeline.title)
         #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
-            #endif
+        #endif
     }
 
     @ViewBuilder
@@ -23,36 +23,7 @@ struct IOSTimelineView: View {
         } else if model.timeline.displayedClusters.isEmpty {
             emptyState
         } else {
-            ScrollViewReader { proxy in
-                ScrollView {
-                    LazyVStack(spacing: 0) {
-                        ForEach(model.timeline.displayedClusters, id: \.id) { cluster in
-                            IOSMessageClusterRow(
-                                cluster: cluster,
-                                guildID: model.selectedSource?.guildID
-                            )
-                            .id(cluster.messages.last?.id.rawValue)
-                        }
-                    }
-                    .padding(.vertical, 8)
-                }
-                .refreshable {
-                    await model.refreshSelectedTimeline(forceFullReload: true)
-                }
-                .onChange(of: model.timeline.pendingJumpMessageID) { _, newValue in
-                    if let messageID = newValue {
-                        _ = model.timeline.consumePendingJumpMessageID()
-                        withAnimation {
-                            proxy.scrollTo(messageID.rawValue, anchor: .center)
-                        }
-                    }
-                }
-                .onAppear {
-                    if let scrollID = model.timeline.currentScrollMessageIDRaw {
-                        proxy.scrollTo(scrollID, anchor: .bottom)
-                    }
-                }
-            }
+            TimelineScrollContent()
         }
     }
 
@@ -75,6 +46,132 @@ struct IOSTimelineView: View {
     }
 }
 
+private struct TimelineScrollContent: View {
+    @Environment(IOSAppModel.self) private var model
+    @State private var isLoadingOlder = false
+    @State private var oldestRequestedID: String?
+    @State private var reachedOldest = false
+    @State private var anchorID: String?
+    @State private var hasInitiallyScrolled = false
+
+    var body: some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 0) {
+                    topSection
+
+                    ForEach(model.timeline.displayedClusters, id: \.id) { cluster in
+                        IOSMessageClusterRow(
+                            cluster: cluster,
+                            guildID: model.selectedSource?.guildID
+                        )
+                        .id(cluster.messages.last?.id.rawValue ?? cluster.id)
+                    }
+                }
+                .padding(.top, 8)
+            }
+            .defaultScrollAnchor(.bottom)
+            .onAppear {
+                guard !hasInitiallyScrolled else { return }
+                hasInitiallyScrolled = true
+                if let lastID = model.timeline.displayedClusters.last?.messages.last?.id.rawValue {
+                    DispatchQueue.main.async {
+                        proxy.scrollTo(lastID, anchor: .bottom)
+                    }
+                }
+            }
+            .onChange(of: model.timeline.pendingJumpMessageID) { _, newValue in
+                if let messageID = newValue {
+                    _ = model.timeline.consumePendingJumpMessageID()
+                    withAnimation {
+                        proxy.scrollTo(messageID.rawValue, anchor: .center)
+                    }
+                }
+            }
+            .onChange(of: anchorID) { _, newValue in
+                if let id = newValue {
+                    anchorID = nil
+                    DispatchQueue.main.async {
+                        proxy.scrollTo(id, anchor: .top)
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var topSection: some View {
+        if isLoadingOlder {
+            HStack {
+                Spacer()
+                ProgressView()
+                    .padding(.vertical, 16)
+                Spacer()
+            }
+        } else if reachedOldest {
+            HStack {
+                Spacer()
+                Text("Beginning of conversation")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                    .padding(.vertical, 12)
+                Spacer()
+            }
+        } else {
+            Button {
+                loadOlderMessages()
+            } label: {
+                HStack {
+                    Spacer()
+                    HStack(spacing: 6) {
+                        Image(systemName: "arrow.up.circle")
+                            .font(.caption)
+                        Text("Load older messages")
+                            .font(.caption)
+                    }
+                    .foregroundStyle(.secondary)
+                    .padding(.vertical, 12)
+                    Spacer()
+                }
+            }
+            .buttonStyle(.plain)
+            .onAppear {
+                if hasInitiallyScrolled {
+                    loadOlderMessages()
+                }
+            }
+        }
+    }
+
+    private func loadOlderMessages() {
+        guard !isLoadingOlder, !reachedOldest else { return }
+        let clusters = model.timeline.displayedClusters
+        guard let firstMessageID = clusters.first?.messages.first?.id else { return }
+
+        let idRaw = firstMessageID.rawValue
+        guard oldestRequestedID != idRaw else { return }
+        oldestRequestedID = idRaw
+
+        let prevTopRowID = clusters.first?.messages.last?.id.rawValue
+        let prevCount = clusters.reduce(0) { $0 + $1.messages.count }
+
+        isLoadingOlder = true
+        Task {
+            await model.loadOlderMessages(before: firstMessageID)
+
+            let newCount = model.timeline.displayedClusters.reduce(0) { $0 + $1.messages.count }
+            if newCount <= prevCount {
+                reachedOldest = true
+            }
+            isLoadingOlder = false
+
+            if let prevTopRowID {
+                anchorID = prevTopRowID
+            }
+        }
+    }
+}
+
 struct IOSInlineTimelineView: View {
     @Environment(IOSAppModel.self) private var model
 
@@ -90,31 +187,7 @@ struct IOSInlineTimelineView: View {
                     Spacer()
                 }
             } else {
-                ScrollViewReader { proxy in
-                    ScrollView {
-                        LazyVStack(spacing: 0) {
-                            ForEach(model.timeline.displayedClusters, id: \.id) { cluster in
-                                IOSMessageClusterRow(
-                                    cluster: cluster,
-                                    guildID: model.selectedSource?.guildID
-                                )
-                                .id(cluster.messages.last?.id.rawValue)
-                            }
-                        }
-                        .padding(.vertical, 8)
-                    }
-                    .refreshable {
-                        await model.refreshSelectedTimeline(forceFullReload: true)
-                    }
-                    .onChange(of: model.timeline.pendingJumpMessageID) { _, newValue in
-                        if let messageID = newValue {
-                            _ = model.timeline.consumePendingJumpMessageID()
-                            withAnimation {
-                                proxy.scrollTo(messageID.rawValue, anchor: .center)
-                            }
-                        }
-                    }
-                }
+                TimelineScrollContent()
             }
 
             IOSComposerBar()

@@ -15,6 +15,7 @@ struct IOSMessageBubble: View {
 
     @Environment(IOSAppModel.self) private var model
     @State private var focusedMedia: FocusedMediaItem?
+    @State private var showingReactionPicker = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -55,6 +56,9 @@ struct IOSMessageBubble: View {
         }
         .contextMenu {
             contextMenuItems
+        }
+        .sheet(isPresented: $showingReactionPicker) {
+            ReactionPickerSheet(message: message.message, guildID: guildID)
         }
         #if os(iOS)
         .fullScreenCover(item: $focusedMedia) { media in
@@ -161,6 +165,12 @@ struct IOSMessageBubble: View {
             model.composer.beginReply(target)
         } label: {
             Label("Reply", systemImage: "arrowshape.turn.up.left")
+        }
+
+        Button {
+            showingReactionPicker = true
+        } label: {
+            Label("Add Reaction", systemImage: "face.smiling")
         }
 
         Button {

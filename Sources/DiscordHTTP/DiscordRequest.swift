@@ -13,11 +13,26 @@ public struct VoidResponse: Codable, Sendable, Hashable {
     public init() {}
 }
 
+public struct MultipartFormFile: Sendable {
+    public var name: String
+    public var filename: String
+    public var contentType: String
+    public var data: Data
+
+    public init(name: String, filename: String, contentType: String, data: Data) {
+        self.name = name
+        self.filename = filename
+        self.contentType = contentType
+        self.data = data
+    }
+}
+
 public struct DiscordRequest<Response>: Sendable where Response: Decodable & Sendable {
     public var method: DiscordHTTPMethod
     public var path: String
     public var query: [URLQueryItem]
     public var body: AnyEncodable?
+    public var multipartFiles: [MultipartFormFile]
     public var authorization: DiscordAuthorization?
     public var headers: [String: String]
     public var fingerprint: Fingerprint?
@@ -27,6 +42,7 @@ public struct DiscordRequest<Response>: Sendable where Response: Decodable & Sen
         path: String,
         query: [URLQueryItem] = [],
         body: AnyEncodable? = nil,
+        multipartFiles: [MultipartFormFile] = [],
         authorization: DiscordAuthorization? = nil,
         headers: [String: String] = [:],
         fingerprint: Fingerprint? = nil
@@ -35,6 +51,7 @@ public struct DiscordRequest<Response>: Sendable where Response: Decodable & Sen
         self.path = path
         self.query = query
         self.body = body
+        self.multipartFiles = multipartFiles
         self.authorization = authorization
         self.headers = headers
         self.fingerprint = fingerprint
@@ -76,7 +93,37 @@ public struct DiscordRequest<Response>: Sendable where Response: Decodable & Sen
             request.setValue(value, forHTTPHeaderField: name)
         }
 
-        if let body {
+        if !multipartFiles.isEmpty {
+            let boundary = "Boundary-\(UUID().uuidString)"
+            request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+            var httpBody = Data()
+            let crlf = "\r\n"
+
+            if let body {
+                do {
+                    let jsonData = try encoder.encode(body)
+                    httpBody.append("--\(boundary)\(crlf)".data(using: .utf8)!)
+                    httpBody.append("Content-Disposition: form-data; name=\"payload_json\"\(crlf)".data(using: .utf8)!)
+                    httpBody.append("Content-Type: application/json\(crlf)\(crlf)".data(using: .utf8)!)
+                    httpBody.append(jsonData)
+                    httpBody.append(crlf.data(using: .utf8)!)
+                } catch {
+                    throw .encodingFailed(error.localizedDescription)
+                }
+            }
+
+            for file in multipartFiles {
+                httpBody.append("--\(boundary)\(crlf)".data(using: .utf8)!)
+                httpBody.append("Content-Disposition: form-data; name=\"\(file.name)\"; filename=\"\(file.filename)\"\(crlf)".data(using: .utf8)!)
+                httpBody.append("Content-Type: \(file.contentType)\(crlf)\(crlf)".data(using: .utf8)!)
+                httpBody.append(file.data)
+                httpBody.append(crlf.data(using: .utf8)!)
+            }
+
+            httpBody.append("--\(boundary)--\(crlf)".data(using: .utf8)!)
+            request.httpBody = httpBody
+        } else if let body {
             do {
                 request.httpBody = try encoder.encode(body)
                 request.setValue("application/json", forHTTPHeaderField: "Content-Type")

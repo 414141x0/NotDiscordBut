@@ -70,6 +70,7 @@ public typealias UserInspectorProjection = DiscordState.UserInspectorProjection
 public typealias NormalizedState = DiscordState.NormalizedState
 public typealias MessageSendInput = DiscordFeatures.MessageSendInput
 public typealias MessageReferenceSendInput = DiscordFeatures.MessageReferenceSendInput
+public typealias MessageAttachmentInput = DiscordFeatures.MessageAttachmentInput
 public typealias ReactionInput = DiscordFeatures.ReactionInput
 public typealias DiscordMessageSearchResults = DiscordPrimitives.DiscordMessageSearchResults
 public typealias NotificationBadgeSnapshot = DiscordFeatures.NotificationBadgeSnapshot

@@ -452,6 +452,20 @@ final class IOSAppModel {
 
     // MARK: - Timeline
 
+    func loadOlderMessages(before messageID: MessageID) async {
+        guard let channelID = currentVisibleChannelID() else { return }
+        do {
+            _ = try await client.messages.list(
+                in: channelID,
+                before: messageID,
+                limit: 50
+            )
+            await refreshSnapshot()
+        } catch {
+            logger.warning("load older messages failed: \(String(describing: error), privacy: .public)")
+        }
+    }
+
     func refreshSelectedTimeline(forceFullReload: Bool = false) async {
         guard let channelID = currentVisibleChannelID() else {
             return
@@ -536,9 +550,9 @@ final class IOSAppModel {
 
     // MARK: - Sending Messages
 
-    func sendMessage() async {
-        let nonce = MessageNonce(rawValue: UUID().uuidString)
-        guard let input = composer.makeSendInput(nonce: nonce) else {
+    func sendMessage(attachments: [MessageAttachmentInput] = []) async {
+        let nonce = MessageNonce(rawValue: String(UInt64(Date().timeIntervalSince1970 * 1000)))
+        guard let input = composer.makeSendInput(nonce: nonce, attachments: attachments) else {
             return
         }
 

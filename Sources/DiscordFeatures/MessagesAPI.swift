@@ -69,9 +69,15 @@ public final class MessagesAPI: @unchecked Sendable {
                 var guildID: GuildID?
             }
 
+            struct AttachmentRef: Codable, Sendable {
+                var id: Int
+                var filename: String
+            }
+
             var content: String
             var nonce: MessageNonce?
             var messageReference: MessageReference?
+            var attachments: [AttachmentRef]?
             var tts: Bool
             var flags: Int
             var mobileNetworkType: String
@@ -88,25 +94,40 @@ public final class MessagesAPI: @unchecked Sendable {
             )
         )
 
+        let attachmentRefs: [Request.AttachmentRef]? = input.attachments.isEmpty ? nil : input.attachments.map {
+            Request.AttachmentRef(id: $0.id, filename: $0.filename)
+        }
+
+        let jsonBody = Request(
+            content: input.content,
+            nonce: input.nonce,
+            messageReference: input.messageReference.map { reference in
+                Request.MessageReference(
+                    messageID: reference.messageID,
+                    channelID: reference.channelID,
+                    guildID: reference.guildID
+                )
+            },
+            attachments: attachmentRefs,
+            tts: false,
+            flags: 0,
+            mobileNetworkType: "unknown"
+        )
+
+        let multipartFiles = input.attachments.map { attachment in
+            MultipartFormFile(
+                name: "files[\(attachment.id)]",
+                filename: attachment.filename,
+                contentType: attachment.contentType,
+                data: attachment.data
+            )
+        }
+
         var request = DiscordRequest<DiscordFeatureMessageDTO>(
             method: .post,
             path: "/channels/\(input.channelID.rawValue)/messages",
-            body: AnyEncodable(
-                Request(
-                    content: input.content,
-                    nonce: input.nonce,
-                    messageReference: input.messageReference.map { reference in
-                        Request.MessageReference(
-                            messageID: reference.messageID,
-                            channelID: reference.channelID,
-                            guildID: reference.guildID
-                        )
-                    },
-                    tts: false,
-                    flags: 0,
-                    mobileNetworkType: "unknown"
-                )
-            )
+            body: AnyEncodable(jsonBody),
+            multipartFiles: multipartFiles
         )
         request.authorization = await authorization()
         if request.authorization?.sessionKind == .user {

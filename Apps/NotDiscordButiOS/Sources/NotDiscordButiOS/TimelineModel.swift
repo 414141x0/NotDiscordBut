@@ -41,7 +41,9 @@ final class TimelineModel {
 
     func apply(channel: DiscordChannel?, projection: ClusteredTimelineProjection) {
         selectedChannel = channel
-        self.projection = projection
+        if self.projection != projection {
+            self.projection = projection
+        }
         rendersTimeline = channel?.kind.supportsTimelineHydration == true
         if let channelID = channel?.id.rawValue {
             currentScrollMessageIDRaw = scrollMessageIDByChannelID[channelID] ?? projection.clusters.last?.messages.last?.id.rawValue

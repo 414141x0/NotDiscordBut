@@ -18,22 +18,39 @@ public struct MessageReferenceSendInput: Hashable, Sendable {
     }
 }
 
-public struct MessageSendInput: Hashable, Sendable {
+public struct MessageAttachmentInput: Sendable {
+    public var id: Int
+    public var filename: String
+    public var data: Data
+    public var contentType: String
+
+    public init(id: Int, filename: String, data: Data, contentType: String) {
+        self.id = id
+        self.filename = filename
+        self.data = data
+        self.contentType = contentType
+    }
+}
+
+public struct MessageSendInput: Sendable {
     public var channelID: ChannelID
     public var content: String
     public var nonce: MessageNonce?
     public var messageReference: MessageReferenceSendInput?
+    public var attachments: [MessageAttachmentInput]
 
     public init(
         channelID: ChannelID,
         content: String,
         nonce: MessageNonce? = nil,
-        messageReference: MessageReferenceSendInput? = nil
+        messageReference: MessageReferenceSendInput? = nil,
+        attachments: [MessageAttachmentInput] = []
     ) {
         self.channelID = channelID
         self.content = content
         self.nonce = nonce
         self.messageReference = messageReference
+        self.attachments = attachments
     }
 }
 

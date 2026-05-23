@@ -28,7 +28,9 @@ struct IOSMessageClusterRow: View {
                     )
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
     }

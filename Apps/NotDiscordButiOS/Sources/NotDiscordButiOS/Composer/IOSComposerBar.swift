@@ -57,11 +57,11 @@ struct IOSComposerBar: View {
                     .textFieldStyle(.plain)
                     .lineLimit(1...6)
                     .onSubmit {
-                        Task { await model.sendMessage() }
+                        Task { await sendWithAttachments() }
                     }
 
                 Button {
-                    Task { await model.sendMessage() }
+                    Task { await sendWithAttachments() }
                 } label: {
                     Image(systemName: "arrow.up.circle.fill")
                         .font(.title2)
@@ -130,6 +130,7 @@ struct IOSComposerBar: View {
 
                         Button {
                             attachmentPreviews.removeAll { $0.id == preview.id }
+                            model.composer.hasAttachments = !attachmentPreviews.isEmpty
                             #if canImport(UIKit)
                             selectedPhotos.removeAll()
                             #endif
@@ -146,6 +147,22 @@ struct IOSComposerBar: View {
             .padding(.horizontal, 12)
             .padding(.top, 8)
         }
+    }
+
+    private func sendWithAttachments() async {
+        let attachments = attachmentPreviews.enumerated().map { index, preview in
+            MessageAttachmentInput(
+                id: index,
+                filename: preview.filename,
+                data: preview.data,
+                contentType: "image/png"
+            )
+        }
+        await model.sendMessage(attachments: attachments)
+        attachmentPreviews.removeAll()
+        #if canImport(UIKit)
+        selectedPhotos.removeAll()
+        #endif
     }
 
     private func thumbnailImage(_ image: PlatformImage) -> Image {
@@ -166,11 +183,12 @@ struct IOSComposerBar: View {
                     id: item.itemIdentifier ?? UUID().uuidString,
                     thumbnail: image,
                     data: data,
-                    filename: "attachment.png"
+                    filename: "image.png"
                 ))
             }
         }
         attachmentPreviews = previews
+        model.composer.hasAttachments = !previews.isEmpty
     }
     #endif
 }

@@ -10,10 +10,11 @@ final class ComposerModel {
     var isSending = false
     var errorMessage: String?
     var replyTarget: MessageReplyTarget?
+    var hasAttachments = false
 
     var canSend: Bool {
         selectedChannelID != nil
-            && !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && (!draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || hasAttachments)
             && !isSending
     }
 
@@ -34,13 +35,13 @@ final class ComposerModel {
         replyTarget = nil
     }
 
-    func makeSendInput(nonce: MessageNonce) -> MessageSendInput? {
+    func makeSendInput(nonce: MessageNonce, attachments: [MessageAttachmentInput] = []) -> MessageSendInput? {
         guard let selectedChannelID else {
             return nil
         }
 
         let content = draft.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !content.isEmpty else {
+        guard !content.isEmpty || !attachments.isEmpty else {
             return nil
         }
 
@@ -54,7 +55,8 @@ final class ComposerModel {
                     channelID: target.channelID,
                     guildID: target.guildID
                 )
-            }
+            },
+            attachments: attachments
         )
     }
 
@@ -67,6 +69,7 @@ final class ComposerModel {
         isSending = false
         draft = ""
         replyTarget = nil
+        hasAttachments = false
     }
 
     func fail(_ error: some Error) {

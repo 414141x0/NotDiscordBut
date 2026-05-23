@@ -99,10 +99,6 @@ struct MainContentView: View {
                     .environment(model)
             }
         }
-        .searchable(text: $model.messageSearchText, prompt: "Search messages")
-        .onChange(of: model.messageSearchText) {
-            model.scheduleMessageSearch()
-        }
     }
 
     private var emptyState: some View {
